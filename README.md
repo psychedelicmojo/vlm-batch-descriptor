@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VLM Batch Descriptor
 
-## Getting Started
+A modern Next.js web application that uses local Vision-Language Models (via **Ollama**) to batch generate descriptions for images and automatically write them to image metadata (EXIF/XMP).
 
-First, run the development server:
+![VLM Batch Descriptor UI](https://via.placeholder.com/800x400?text=VLM+Batch+Descriptor+Preview)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- 🖼️ **Batch Processing**: Process entire folders of images at once.
+- 🧠 **Local AI**: Uses running local LLMs (Llava, Bakllava, etc.) via Ollama. No cloud API keys required.
+- 🏷️ **Metadata Writing**: Writes descriptions directly to:
+  - `ImageDescription` (EXIF)
+  - `XPComment` (Windows)
+  - `XMP-dc:Description` (XMP)
+- 🔒 **Secure**: Hardened against command injection using `spawnSync`.
+- 🛡️ **Robust**: 
+  - File existence and permission checks.
+  - Abort controller to cancel batches mid-way.
+  - Hard timeouts to prevent hanging on corrupted files.
+- 🎨 **Modern UI**: Clean, glassmorphism-inspired interface with real-time logs and progress tracking.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Prerequisites
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Ollama**: Installed and running locally. [Get Ollama](https://ollama.ai)
+- **Node.js**: v18 or newer.
+- **Git**
 
-## Learn More
+## Setup
 
-To learn more about Next.js, take a look at the following resources:
+1. **Pull a VLM Model** (if you haven't already):
+   ```bash
+   ollama pull llava
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/psychedelicmojo/vlm-batch-descriptor.git
+   cd vlm-batch-descriptor/app
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+## Usage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Start Ollama** (with CORS allowed for browser access):
+   **PowerShell**:
+   ```powershell
+   $env:OLLAMA_ORIGINS="*"; ollama serve
+   ```
+   **Mac/Linux**:
+   ```bash
+   OLLAMA_ORIGINS="*" ollama serve
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Start the Web App**:
+   ```bash
+   npm run dev
+   ```
+
+3. **Open Browser**:
+   Navigate to [http://localhost:3000](http://localhost:3000).
+
+4. **Workflow**:
+   - Paste the full path to your image folder (e.g., `C:\Users\Name\Pictures\Vacation`).
+   - Click **"Load Images"**.
+   - Select your model (e.g., `llava:latest`).
+   - Click **"Start Batch"**.
+   - Watch as descriptions are generated and written to your files!
+
+## Technical Details
+
+- **Frontend**: Next.js App Router (React), Vanilla CSS.
+- **Backend**: Next.js API Routes.
+- **Image Processing**:
+  - Images directly read from disk.
+  - Base64 encoded for safe transport to Ollama.
+- **Metadata Tools**: Uses a vendored `exiftool` binary for maximum compatibility.
+
+## Known Limitations
+
+- Currently designed for Windows file paths (backslashes), though core logic works on Mac/Linux.
+- Serial processing is enforced to prevent overloading local consumer GPUs.
+
+## License
+
+MIT
